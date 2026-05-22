@@ -1,0 +1,149 @@
+# 
+screenpen.build
+screenpen.dist
+*.svg
+*.png
+*.ipynb
+launch.json
+settings.json
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+#  通常这些文件由 Python 脚本从模板生成，
+#  在 PyInstaller 构建 exe 之前注入日期等信息。
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+#   对于库或包，你可能希望忽略这些文件，因为代码
+#   需要在多个环境中运行；否则，可以将其提交到版本控制：
+# .python-version
+
+# pipenv
+#   根据 pypa/pipenv#598，建议将 Pipfile.lock 纳入版本控制。
+#   但在协作时，如果有平台特定的依赖或缺乏跨平台支持的依赖，
+#   pipenv 可能安装无法正常工作的依赖，或者遗漏某些必需的依赖。
+#Pipfile.lock
+
+# PEP 582；被 github.com/David-OConnor/pyflow 等项目使用
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# Local agent/editor settings
+.claude/settings.local.json
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
