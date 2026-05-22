@@ -9,6 +9,7 @@ from typing import Iterable
 class DrawMode(str, Enum):
     DRAW = "draw"
     ERASE = "erase"
+    SCREENSHOT = "screenshot"
     PASSTHROUGH = "passthrough"
     BOX = "box"
     ELLIPSE = "ellipse"

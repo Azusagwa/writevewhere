@@ -390,9 +390,7 @@ def test_width_slider_updates_current_mode_width(monkeypatch, tmp_path):
     monkeypatch.setattr(control, "ensure_on_top", lambda: None)
 
     pen_widths: list[int] = []
-    eraser_widths: list[int] = []
     monkeypatch.setattr(overlay, "set_pen_width", lambda width: pen_widths.append(width))
-    monkeypatch.setattr(overlay, "set_eraser_width", lambda width: eraser_widths.append(width))
 
     control.set_menu_expanded(True)
     control.width_button.click()
@@ -403,10 +401,6 @@ def test_width_slider_updates_current_mode_width(monkeypatch, tmp_path):
 
     assert pen_widths[-1] == 12
 
-    control._set_mode(DrawMode.ERASE)
-    control.width_slider.setValue(12)
-
-    assert eraser_widths[-1] == 48
     assert control._expanded
 
     control.close()
@@ -435,15 +429,6 @@ def test_width_slider_keeps_independent_width_per_draw_mode(monkeypatch, tmp_pat
     assert control.width_slider.value() == 8
     assert overlay.pen_width == 8
 
-    control._set_mode(DrawMode.ERASE)
-
-    assert control.width_slider.value() == 6
-    assert overlay.eraser_width == 24
-
-    control.width_slider.setValue(9)
-
-    assert overlay.eraser_width == 36
-
     control.close()
     overlay.close()
 
@@ -458,8 +443,6 @@ def test_width_settings_persist_between_control_windows(monkeypatch, tmp_path):
 
     control._set_mode(DrawMode.ARROW)
     control.width_slider.setValue(17)
-    control._set_mode(DrawMode.ERASE)
-    control.width_slider.setValue(11)
     control.close()
     overlay.close()
 
@@ -474,11 +457,6 @@ def test_width_settings_persist_between_control_windows(monkeypatch, tmp_path):
 
     assert restored_control.width_slider.value() == 17
     assert restored_overlay.pen_width == 17
-
-    restored_control._set_mode(DrawMode.ERASE)
-
-    assert restored_control.width_slider.value() == 11
-    assert restored_overlay.eraser_width == 44
 
     restored_control.close()
     restored_overlay.close()
@@ -522,7 +500,7 @@ def test_selecting_mode_collapses_secondary_menu(monkeypatch):
     control.erase_button.click()
     QTest.qWait(320)
 
-    assert modes[-1] == DrawMode.ERASE
+    assert modes[-1] == DrawMode.SCREENSHOT
     assert control.erase_button.isChecked()
     assert not control._expanded
     assert control.size().width() == 210
@@ -531,7 +509,7 @@ def test_selecting_mode_collapses_secondary_menu(monkeypatch):
     overlay.close()
 
 
-def test_pen_button_switches_from_eraser_to_drawing(monkeypatch):
+def test_pen_button_switches_from_screenshot_to_drawing(monkeypatch):
     _app()
     overlay = OverlayWindow()
     control = ControlWindow(overlay)
@@ -540,7 +518,7 @@ def test_pen_button_switches_from_eraser_to_drawing(monkeypatch):
     monkeypatch.setattr(overlay, "set_mode", lambda mode: modes.append(mode))
     monkeypatch.setattr(control, "ensure_on_top", lambda: None)
 
-    control._set_mode(DrawMode.ERASE)
+    control._set_mode(DrawMode.SCREENSHOT)
     control.draw_button.click()
 
     assert modes[-1] == DrawMode.DRAW
@@ -619,6 +597,22 @@ def test_control_window_ensure_on_top_uses_window_priority_helper(monkeypatch):
     overlay.close()
 
 
+def test_overlay_mode_sync_updates_control_buttons(monkeypatch):
+    _app()
+    overlay = OverlayWindow()
+    control = ControlWindow(overlay)
+    monkeypatch.setattr(control, "ensure_on_top", lambda: None)
+
+    control._set_mode(DrawMode.SCREENSHOT)
+    overlay.set_mode(DrawMode.PASSTHROUGH)
+
+    assert not control.erase_button.isChecked()
+    assert not any(button.isChecked() for button in control.mode_buttons.values())
+
+    control.close()
+    overlay.close()
+
+
 def test_overlay_set_mode_keeps_click_through_behavior_without_activation(monkeypatch):
     _app()
     overlay = OverlayWindow()
@@ -653,6 +647,7 @@ def test_control_window_ui_assets_load():
     assert not control_module._button_background("main", False).isNull()
     assert not control_module._button_background("secondary", True).isNull()
     assert not control_module._ui_asset_pixmap("icon-pen.png").isNull()
+    assert not control_module._ui_asset_pixmap("icon-camera.png").isNull()
 
 
 def test_control_window_falls_back_when_ui_assets_are_missing(monkeypatch):
@@ -666,6 +661,7 @@ def test_control_window_falls_back_when_ui_assets_are_missing(monkeypatch):
 
     assert control_module._button_background("main", False).isNull()
     assert not control_module._icon_for_mode(DrawMode.DRAW, False, "#ff3333").isNull()
+    assert not control_module._icon_for_mode(DrawMode.SCREENSHOT, False, "#ff3333").isNull()
     assert not control_module._utility_icon("clear").isNull()
 
     control_module._ui_asset_pixmap.cache_clear()

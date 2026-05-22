@@ -33,6 +33,7 @@ from writevewhere.windows.overlay_window import OverlayWindow
 MODE_LABELS = {
     DrawMode.DRAW: "\u753b\u7b14",
     DrawMode.ERASE: "\u6a61\u76ae\u64e6",
+    DrawMode.SCREENSHOT: "\u622a\u56fe",
     DrawMode.PASSTHROUGH: "\u900f\u4f20",
     DrawMode.BOX: "\u77e9\u5f62",
     DrawMode.ELLIPSE: "\u692d\u5706",
@@ -55,7 +56,6 @@ CONFIGURABLE_WIDTH_MODES = (
     DrawMode.BOX,
     DrawMode.ELLIPSE,
     DrawMode.ARROW,
-    DrawMode.ERASE,
 )
 
 MODE_ICON_ASSETS = {
@@ -64,6 +64,7 @@ MODE_ICON_ASSETS = {
     DrawMode.ELLIPSE: "icon-ellipse.png",
     DrawMode.ARROW: "icon-arrow.png",
     DrawMode.ERASE: "icon-eraser.png",
+    DrawMode.SCREENSHOT: "icon-camera.png",
     DrawMode.PASSTHROUGH: "icon-passthrough.png",
 }
 
@@ -158,7 +159,6 @@ class ControlWindow(QWidget):
         self._apply_window_mask(False)
         self.overlay.set_control_window(self)
         self._sync_width_slider_to_mode(DrawMode.DRAW, apply_overlay=True)
-        self._apply_width_to_overlay(DrawMode.ERASE, self._mode_widths[DrawMode.ERASE])
         self._set_mode(DrawMode.PASSTHROUGH)
 
     def _build_ui(self) -> None:
@@ -194,14 +194,15 @@ class ControlWindow(QWidget):
         self.box_button = self._tool_button(MODE_LABELS[DrawMode.BOX], MENU_SIZE, True)
         self.ellipse_button = self._tool_button(MODE_LABELS[DrawMode.ELLIPSE], MENU_SIZE, True)
         self.arrow_button = self._tool_button(MODE_LABELS[DrawMode.ARROW], MENU_SIZE, True)
-        self.erase_button = self._tool_button(MODE_LABELS[DrawMode.ERASE], MENU_SIZE, True)
+        self.screenshot_button = self._tool_button(MODE_LABELS[DrawMode.SCREENSHOT], MENU_SIZE, True)
+        self.erase_button = self.screenshot_button
 
         self.mode_buttons: dict[DrawMode, QToolButton] = {
             DrawMode.DRAW: self.draw_button,
             DrawMode.BOX: self.box_button,
             DrawMode.ELLIPSE: self.ellipse_button,
             DrawMode.ARROW: self.arrow_button,
-            DrawMode.ERASE: self.erase_button,
+            DrawMode.SCREENSHOT: self.screenshot_button,
         }
         for mode, button in self.mode_buttons.items():
             button.setIcon(_icon_for_mode(mode, checked=False, color=self._current_color))
@@ -269,7 +270,7 @@ class ControlWindow(QWidget):
             (self.ellipse_button, 10, MENU_SIZE),
             (self.arrow_button, 51, MENU_SIZE),
             (self.width_button, 90, UTILITY_SIZE),
-            (self.erase_button, 129, MENU_SIZE),
+            (self.screenshot_button, 129, MENU_SIZE),
             (self.color_button, 170, UTILITY_SIZE),
             (self.clear_button, 211, UTILITY_SIZE),
             (self.exit_button, 252, UTILITY_SIZE),
@@ -460,11 +461,15 @@ class ControlWindow(QWidget):
     def _toggle_draw_mode(self) -> None:
         self._select_mode(DrawMode.DRAW)
 
-    def _set_mode(self, mode: DrawMode) -> None:
+    def sync_overlay_mode(self, mode: DrawMode) -> None:
+        self._set_mode(mode, apply_overlay=False)
+
+    def _set_mode(self, mode: DrawMode, apply_overlay: bool = True) -> None:
         self._mode = mode
         if mode in CONFIGURABLE_WIDTH_MODES:
-            self._sync_width_slider_to_mode(mode, apply_overlay=True)
-        self.overlay.set_mode(mode)
+            self._sync_width_slider_to_mode(mode, apply_overlay=apply_overlay)
+        if apply_overlay:
+            self.overlay.set_mode(mode)
         for button_mode, button in self.mode_buttons.items():
             checked = mode == button_mode
             button.setChecked(checked)
@@ -563,10 +568,7 @@ class ControlWindow(QWidget):
             self._apply_width_to_overlay(mode, width)
 
     def _apply_width_to_overlay(self, mode: DrawMode, width: int) -> None:
-        if mode == DrawMode.ERASE:
-            self.overlay.set_eraser_width(max(12, width * 4))
-        else:
-            self.overlay.set_pen_width(width)
+        self.overlay.set_pen_width(width)
 
     def _load_mode_width(self, mode: DrawMode) -> int:
         return self._clamp_width(self._settings.value(self._width_setting_key(mode), DEFAULT_WIDTH))
@@ -742,6 +744,11 @@ def _draw_icon(kind: str, color: QColor) -> QIcon:
     elif kind == DrawMode.ERASE.value:
         painter.drawRoundedRect(18, 28, 28, 18, 5, 5)
         painter.drawLine(25, 45, 48, 45)
+    elif kind == DrawMode.SCREENSHOT.value:
+        painter.drawRoundedRect(15, 22, 34, 24, 5, 5)
+        painter.drawRoundedRect(21, 17, 12, 7, 3, 3)
+        painter.drawEllipse(26, 27, 12, 12)
+        painter.drawPoint(43, 27)
 
     painter.end()
     return QIcon(pixmap)

@@ -3,6 +3,7 @@ screenpen.build
 screenpen.dist
 *.svg
 *.png
+!writevewhere/assets/ui/icon-camera.png
 *.ipynb
 launch.json
 settings.json

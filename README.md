@@ -31,6 +31,10 @@ py app.py
 py -m writevewhere
 ```
 
+也可以从exe文件快速运行
+
+Writevewhere.exe
+
 ## 基本操作
 
 - 点击悬浮球展开或收起二级菜单。
