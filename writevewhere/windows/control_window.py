@@ -18,6 +18,7 @@ from PySide6.QtCore import (
 )
 from PySide6.QtGui import QColor, QGuiApplication, QIcon, QPainter, QPainterPath, QPen, QPixmap, QRadialGradient, QRegion
 from PySide6.QtWidgets import (
+    QApplication,
     QColorDialog,
     QGraphicsOpacityEffect,
     QLabel,
@@ -593,6 +594,7 @@ class ControlWindow(QWidget):
     def close_app(self) -> None:
         self.overlay.close()
         self.close()
+        QApplication.instance().quit()
 
     def _update_color_dot(self) -> None:
         self.color_dot.setStyleSheet(

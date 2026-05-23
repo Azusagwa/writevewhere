@@ -9,8 +9,6 @@ internal static class WritevewhereLauncher
     {
         string appDir = AppDomain.CurrentDomain.BaseDirectory;
         string appPy = Path.Combine(appDir, "app.py");
-        string pythonw = @"C:\Users\zichuanyan\anaconda3\pythonw.exe";
-        string python = @"C:\Users\zichuanyan\anaconda3\python.exe";
 
         if (!File.Exists(appPy))
         {
@@ -23,11 +21,22 @@ internal static class WritevewhereLauncher
             return 1;
         }
 
-        string interpreter = File.Exists(pythonw) ? pythonw : python;
-        if (!File.Exists(interpreter))
+        // Try venv Python first (relative to the exe directory)
+        string venvDir = Path.Combine(appDir, ".venv", "Scripts");
+        string pythonw = Path.Combine(venvDir, "pythonw.exe");
+        string python = Path.Combine(venvDir, "python.exe");
+
+        string interpreter;
+        if (File.Exists(pythonw))
+            interpreter = pythonw;
+        else if (File.Exists(python))
+            interpreter = python;
+        else
         {
             MessageBox.Show(
-                "Cannot find Anaconda Python. Expected: " + python,
+                "Cannot find Python in virtual environment.\n" +
+                "Expected: " + pythonw + "\n" +
+                "Please create a .venv and install dependencies.",
                 "Writevewhere",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error
