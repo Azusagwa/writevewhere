@@ -102,10 +102,11 @@ class _GlassToolButton(QToolButton):
     def paintEvent(self, event) -> None:  # noqa: N802
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+        painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform, True)
 
         background = _button_background(self._role, self.isChecked() or self._visual_active)
         if not background.isNull():
-            painter.drawPixmap(self.rect(), background)
+            _draw_asset_pixmap(painter, self.rect(), background)
         else:
             _paint_fallback_button(painter, self.rect(), self.isChecked() or self._visual_active)
 
@@ -117,13 +118,13 @@ class _GlassToolButton(QToolButton):
         icon = self.icon()
         if not icon.isNull():
             icon_size = self.iconSize()
-            pixmap = icon.pixmap(64, 64)
-            pixmap = pixmap.scaled(
-                icon_size,
-                Qt.AspectRatioMode.KeepAspectRatio,
-                Qt.TransformationMode.SmoothTransformation,
-            )
-            top_left = self.rect().center() - QPoint(pixmap.width() // 2, pixmap.height() // 2)
+            dpr = max(1.0, self.devicePixelRatioF())
+            physical_size = QSize(round(icon_size.width() * dpr), round(icon_size.height() * dpr))
+            pixmap = icon.pixmap(physical_size)
+            pixmap.setDevicePixelRatio(dpr)
+            logical_width = round(pixmap.width() / dpr)
+            logical_height = round(pixmap.height() / dpr)
+            top_left = self.rect().center() - QPoint(logical_width // 2, logical_height // 2)
             painter.drawPixmap(top_left, pixmap)
 
         painter.end()
@@ -697,6 +698,17 @@ def _button_background(role: str, active: bool) -> QPixmap:
     if role == "utility":
         return _ui_asset_pixmap("button-secondary-active.png" if active else "button-utility.png")
     return _ui_asset_pixmap("button-secondary-active.png" if active else "button-secondary.png")
+
+
+def _draw_asset_pixmap(painter: QPainter, rect: QRect, pixmap: QPixmap) -> None:
+    if pixmap.isNull():
+        return
+
+    device_pixmap = QPixmap(pixmap)
+    dpr_x = pixmap.width() / max(1, rect.width())
+    dpr_y = pixmap.height() / max(1, rect.height())
+    device_pixmap.setDevicePixelRatio(min(dpr_x, dpr_y))
+    painter.drawPixmap(rect.topLeft(), device_pixmap)
 
 
 @lru_cache(maxsize=None)
